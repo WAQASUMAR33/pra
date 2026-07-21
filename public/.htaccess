@@ -1,0 +1,20 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # 1. API Route Rewrites to PHP scripts
+    RewriteRule ^api/config$ api/config.php [L,QSA]
+    RewriteRule ^api/invoices$ api/invoices.php [L,QSA]
+    RewriteRule ^api/invoices/([a-zA-Z0-9-]+)/upload$ api/upload.php?id=$1 [L,QSA]
+    RewriteRule ^api/invoices/([a-zA-Z0-9-]+)$ api/invoice.php?id=$1 [L,QSA]
+
+    # 2. Dynamic Invoice page rewrite (route invoices/* dynamic URLs to placeholder.html)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^invoices/([a-zA-Z0-9-]+)$ invoices/placeholder.html [L,QSA]
+
+    # 3. Next.js Static Pages Rewrites (allow clean URLs without .html extension)
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}\.html -f
+    RewriteRule ^(.*)$ $1.html [L]
+</IfModule>
