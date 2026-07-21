@@ -1,20 +1,25 @@
 <IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
     RewriteEngine On
-    RewriteBase /
 
-    # 1. API Route Rewrites to PHP scripts
-    RewriteRule ^api/config$ api/config.php [L,QSA]
-    RewriteRule ^api/invoices$ api/invoices.php [L,QSA]
-    RewriteRule ^api/invoices/([a-zA-Z0-9-]+)/upload$ api/upload.php?id=$1 [L,QSA]
-    RewriteRule ^api/invoices/([a-zA-Z0-9-]+)$ api/invoice.php?id=$1 [L,QSA]
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # 2. Dynamic Invoice page rewrite (route invoices/* dynamic URLs to placeholder.html)
+    # Handle X-XSRF-Token Header
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^invoices/([a-zA-Z0-9-]+)$ invoices/placeholder.html [L,QSA]
-
-    # 3. Next.js Static Pages Rewrites (allow clean URLs without .html extension)
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME}\.html -f
-    RewriteRule ^(.*)$ $1.html [L]
+    RewriteRule ^ index.php [L]
 </IfModule>
